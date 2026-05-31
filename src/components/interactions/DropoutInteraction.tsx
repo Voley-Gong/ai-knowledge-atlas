@@ -151,7 +151,7 @@ export default function DropoutInteraction() {
   useEffect(() => { draw(); }, [draw]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: "100%" }}>
       <div className="px-4 pt-2 flex gap-2">
         <button
           onClick={toggleTraining}
@@ -164,8 +164,8 @@ export default function DropoutInteraction() {
           {training ? '🟡 训练中 (点击切换)' : '⚪ 点击开始训练'}
         </button>
       </div>
-      <div className="flex-1">
-        <canvas ref={canvasRef} className="w-full h-full" />
+      <div style={{ height: "240px", position: "relative" }}>
+        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
       </div>
     </div>
   );

@@ -163,7 +163,7 @@ export default function EncoderDecoderInteraction() {
   }, [step, input, output, animProgress]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: "100%" }}>
       <div className="px-4 pt-2 flex gap-2 items-center">
         <button
           onClick={nextStep}
@@ -178,8 +178,8 @@ export default function EncoderDecoderInteraction() {
           🔄 重置
         </button>
       </div>
-      <div className="flex-1">
-        <canvas ref={canvasRef} className="w-full h-full" />
+      <div style={{ height: "240px", position: "relative" }}>
+        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
       </div>
     </div>
   );

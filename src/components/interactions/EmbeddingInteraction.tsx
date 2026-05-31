@@ -1,183 +1,200 @@
 'use client';
 
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
-interface WordPoint {
-  word: string;
-  x: number;
-  y: number;
-  origX: number;
-  origY: number;
-  category: string;
+/**
+ * 初始化Canvas并处理DPR缩放
+ * 返回实际绘图宽高
+ */
+function setupCanvas(canvas: HTMLCanvasElement): { ctx: CanvasRenderingContext2D; w: number; h: number } | null {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const parent = canvas.parentElement;
+  if (!parent) return null;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+  const w = parent.clientWidth || 400;
+  const h = 240;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
 }
 
-const WORDS: Omit<WordPoint, 'x' | 'y' | 'origX' | 'origY'>[] = [
-  { word: '猫', category: 'animal' },
-  { word: '狗', category: 'animal' },
-  { word: '鱼', category: 'animal' },
-  { word: '鸟', category: 'animal' },
-  { word: '汽车', category: 'vehicle' },
-  { word: '火箭', category: 'vehicle' },
-  { word: '飞机', category: 'vehicle' },
-  { word: '苹果', category: 'fruit' },
-  { word: '香蕉', category: 'fruit' },
-  { word: '电脑', category: 'tech' },
-  { word: '手机', category: 'tech' },
-  { word: '快乐', category: 'emotion' },
-  { word: '悲伤', category: 'emotion' },
+// 预设词语和它们的2D坐标（模拟embedding空间）
+const WORDS = [
+  { word: '猫', x: 80, y: 80, group: 'animal' },
+  { word: '狗', x: 130, y: 100, group: 'animal' },
+  { word: '鱼', x: 100, y: 140, group: 'animal' },
+  { word: '汽车', x: 280, y: 80, group: 'vehicle' },
+  { word: '火箭', x: 320, y: 120, group: 'vehicle' },
+  { word: '飞机', x: 300, y: 160, group: 'vehicle' },
+  { word: '苹果', x: 180, y: 60, group: 'food' },
+  { word: '面包', x: 200, y: 100, group: 'food' },
+  { word: '跑', x: 70, y: 180, group: 'verb' },
+  { word: '飞', x: 280, y: 50, group: 'verb' },
 ];
 
-const CAT_COLORS: Record<string, string> = {
-  animal: '#10B981',
-  vehicle: '#3B82F6',
-  fruit: '#F59E0B',
-  tech: '#8B5CF6',
-  emotion: '#EC4899',
+const GROUP_COLORS: Record<string, string> = {
+  animal: '#3B82F6',
+  vehicle: '#F59E0B',
+  food: '#10B981',
+  verb: '#EC4899',
 };
 
 export default function EmbeddingInteraction() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [points, setPoints] = useState<WordPoint[]>([]);
-  const draggingRef = useRef<number | null>(null);
-  const animRef = useRef<number>(0);
-
-  // Initialize points
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const clusterOffsets: Record<string, { x: number; y: number }> = {
-      animal: { x: -80, y: -60 },
-      vehicle: { x: 80, y: -60 },
-      fruit: { x: -80, y: 60 },
-      tech: { x: 80, y: 60 },
-      emotion: { x: 0, y: 0 },
-    };
-    const pts: WordPoint[] = WORDS.map(w => {
-      const off = clusterOffsets[w.category];
-      const x = cx + off.x + (Math.random() - 0.5) * 60;
-      const y = cy + off.y + (Math.random() - 0.5) * 50;
-      return { ...w, x, y, origX: x, origY: y };
-    });
-    setPoints(pts);
-  }, []);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const wordsRef = useRef(WORDS.map(w => ({ ...w })));
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    const result = setupCanvas(canvas);
+    if (!result) return;
+    const { ctx, w, h } = result;
+    const words = wordsRef.current;
 
-    if (points.length === 0) return;
+    // 缩放坐标到画布尺寸
+    const scaleX = w / 400;
+    const scaleY = h / 240;
 
-    // Draw connections between same-category
-    for (let i = 0; i < points.length; i++) {
-      for (let j = i + 1; j < points.length; j++) {
-        if (points[i].category === points[j].category) {
-          const dx = points[i].x - points[j].x;
-          const dy = points[i].y - points[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 200) {
-            const alpha = Math.max(0, 1 - dist / 200) * 0.3;
-            ctx.strokeStyle = CAT_COLORS[points[i].category] + Math.round(alpha * 255).toString(16).padStart(2, '0');
-            ctx.lineWidth = 1;
+    // 画连线（同类之间）
+    const groups: Record<string, typeof words> = {};
+    words.forEach(word => {
+      if (!groups[word.group]) groups[word.group] = [];
+      groups[word.group].push(word);
+    });
+
+    Object.entries(groups).forEach(([group, members]) => {
+      const color = GROUP_COLORS[group] || '#666';
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const a = members[i];
+          const b = members[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < 120) {
             ctx.beginPath();
-            ctx.moveTo(points[i].x, points[i].y);
-            ctx.lineTo(points[j].x, points[j].y);
+            ctx.moveTo(a.x * scaleX, a.y * scaleY);
+            ctx.lineTo(b.x * scaleX, b.y * scaleY);
+            ctx.strokeStyle = color + '30';
+            ctx.lineWidth = 1;
             ctx.stroke();
           }
         }
       }
-    }
-
-    // Draw points
-    points.forEach(p => {
-      const color = CAT_COLORS[p.category];
-      // Circle
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
-      ctx.fillStyle = color + '30';
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Word
-      ctx.fillStyle = '#fff';
-      ctx.font = '13px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(p.word, p.x, p.y);
     });
 
-    // Spring-back animation
-    let needsAnim = false;
-    setPoints(prev => prev.map(p => {
-      if (draggingRef.current !== null && points[draggingRef.current] === p) return p;
-      const dx = p.origX - p.x;
-      const dy = p.origY - p.y;
-      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-        needsAnim = true;
-        return { ...p, x: p.x + dx * 0.08, y: p.y + dy * 0.08 };
-      }
-      return p;
-    }));
+    // 画词语点
+    words.forEach((word, i) => {
+      const color = GROUP_COLORS[word.group] || '#666';
+      const px = word.x * scaleX;
+      const py = word.y * scaleY;
+      const isActive = dragIdx === i;
 
-    if (needsAnim) {
-      animRef.current = requestAnimationFrame(draw);
-    }
-  }, [points]);
+      // 光晕
+      ctx.beginPath();
+      ctx.arc(px, py, isActive ? 18 : 12, 0, Math.PI * 2);
+      ctx.fillStyle = color + (isActive ? '40' : '15');
+      ctx.fill();
+
+      // 圆点
+      ctx.beginPath();
+      ctx.arc(px, py, isActive ? 8 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // 标签
+      ctx.fillStyle = isActive ? '#fff' : '#cbd5e1';
+      ctx.font = (isActive ? 'bold 14px' : '13px') + ' sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(word.word, px, py - 16);
+    });
+
+    // 图例
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    let ly = 20;
+    Object.entries(GROUP_COLORS).forEach(([group, color]) => {
+      ctx.beginPath();
+      ctx.arc(15, ly, 4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(group, 25, ly + 4);
+      ly += 18;
+    });
+  }, [dragIdx]);
 
   useEffect(() => {
-    draw();
-    return () => cancelAnimationFrame(animRef.current);
+    const t = setTimeout(draw, 100);
+    window.addEventListener('resize', draw);
+    return () => { clearTimeout(t); window.removeEventListener('resize', draw); };
   }, [draw]);
 
-  const getPointAt = (mx: number, my: number): number | null => {
-    for (let i = points.length - 1; i >= 0; i--) {
-      const dx = points[i].x - mx;
-      const dy = points[i].y - my;
-      if (dx * dx + dy * dy < 400) return i;
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const w = rect.width;
+    const h = rect.height;
+    const scaleX = w / 400;
+    const scaleY = h / 240;
+
+    for (let i = wordsRef.current.length - 1; i >= 0; i--) {
+      const word = wordsRef.current[i];
+      const dx = mx - word.x * scaleX;
+      const dy = my - word.y * scaleY;
+      if (Math.hypot(dx, dy) < 20) {
+        setDragIdx(i);
+        return;
+      }
     }
-    return null;
   };
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    const idx = getPointAt(e.clientX - rect.left, e.clientY - rect.top);
-    if (idx !== null) {
-      draggingRef.current = idx;
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    }
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (dragIdx === null) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const scaleX = rect.width / 400;
+    const scaleY = rect.height / 240;
+    wordsRef.current[dragIdx].x = Math.max(20, Math.min(380, mx / scaleX));
+    wordsRef.current[dragIdx].y = Math.max(20, Math.min(220, my / scaleY));
+    draw();
   };
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (draggingRef.current === null) return;
-    const rect = canvasRef.current!.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setPoints(prev => prev.map((p, i) => i === draggingRef.current ? { ...p, x, y } : p));
-  };
-
-  const handlePointerUp = () => {
-    draggingRef.current = null;
+  const handleMouseUp = () => {
+    setDragIdx(null);
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full touch-none"
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-    />
+    <div className="w-full p-3">
+      <p className="text-xs text-[#64748b] mb-2">📍 拖拽词语点，观察语义空间中的"距离关系"</p>
+      <canvas
+        ref={canvasRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={e => {
+          const touch = e.touches[0];
+          handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY } as any);
+        }}
+        onTouchMove={e => {
+          const touch = e.touches[0];
+          handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as any);
+        }}
+        onTouchEnd={handleMouseUp}
+        style={{ width: '100%', height: '240px', display: 'block', touchAction: 'none' }}
+      />
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 
-// Simple Chinese tokenizer simulation
 function simpleTokenize(text: string): string[] {
   if (!text) return [];
   const tokens: string[] = [];
@@ -33,33 +32,43 @@ export default function TokenInteraction() {
   const [tokens, setTokens] = useState<string[]>(['人工', '智能', '改变', '世界']);
   const [hoveredToken, setHoveredToken] = useState<number | null>(null);
 
+  const CANVAS_HEIGHT = 220;
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const w = canvas.parentElement?.clientWidth || 400;
+    const h = CANVAS_HEIGHT;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, w, h);
 
-    if (tokens.length === 0) return;
+    if (tokens.length === 0) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('输入文字查看分词效果', w / 2, h / 2);
+      return;
+    }
 
-    // Calculate layout
     const padding = 20;
     const gap = 8;
     const blockSize = 44;
-    const startY = 20;
+    const startY = 15;
 
-    // Draw token blocks
     let x = padding;
     let y = startY;
     tokens.forEach((token, i) => {
+      ctx.font = '16px sans-serif';
       const width = Math.max(blockSize, ctx.measureText(token).width + 24);
-      if (x + width > rect.width - padding) {
+      if (x + width > w - padding) {
         x = padding;
         y += blockSize + gap;
       }
@@ -67,7 +76,6 @@ export default function TokenInteraction() {
       const color = COLORS[i % COLORS.length];
       const isHovered = hoveredToken === i;
 
-      // Block
       ctx.fillStyle = isHovered ? color + '40' : color + '20';
       ctx.strokeStyle = isHovered ? color : color + '80';
       ctx.lineWidth = isHovered ? 2 : 1;
@@ -76,14 +84,12 @@ export default function TokenInteraction() {
       ctx.fill();
       ctx.stroke();
 
-      // Text
       ctx.fillStyle = isHovered ? '#fff' : color;
       ctx.font = `${isHovered ? 'bold ' : ''}16px sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(token, x + width / 2, y + blockSize / 2);
 
-      // Token index
       ctx.fillStyle = '#64748b';
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'left';
@@ -92,18 +98,20 @@ export default function TokenInteraction() {
       x += width + gap;
     });
 
-    // Hovered token info
     if (hoveredToken !== null && hoveredToken < tokens.length) {
       const token = tokens[hoveredToken];
       ctx.fillStyle = '#94a3b8';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`Token #${hoveredToken + 1}: "${token}" (${token.length} chars)`, padding, rect.height - 10);
+      ctx.fillText(`Token #${hoveredToken + 1}: "${token}" (${token.length} chars)`, padding, h - 10);
     }
   }, [tokens, hoveredToken]);
 
   useEffect(() => {
-    draw();
+    // 延迟确保 DOM 已渲染
+    const t = setTimeout(draw, 100);
+    window.addEventListener('resize', draw);
+    return () => { clearTimeout(t); window.removeEventListener('resize', draw); };
   }, [draw]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -112,7 +120,6 @@ export default function TokenInteraction() {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -120,10 +127,11 @@ export default function TokenInteraction() {
     const gap = 8;
     const blockSize = 44;
     let x = padding;
-    let y = 20;
+    let y = 15;
     let found = false;
 
     for (let i = 0; i < tokens.length; i++) {
+      ctx.font = '16px sans-serif';
       const width = Math.max(blockSize, ctx.measureText(tokens[i]).width + 24);
       if (x + width > rect.width - padding) {
         x = padding;
@@ -139,29 +147,26 @@ export default function TokenInteraction() {
     if (!found) setHoveredToken(null);
   };
 
-  const handleInputChange = (val: string) => {
-    setInput(val);
-    if (val) {
-      // Check if matches a preset
-      const preset = PRESETS.find(p => p.text === val);
-      setTokens(preset ? preset.tokens : simpleTokenize(val));
-    } else {
-      setTokens([]);
-    }
-  };
-
   return (
-    <div className="h-full flex flex-col">
-      <div className="px-4 py-2 flex gap-2">
+    <div className="w-full p-3 space-y-2">
+      <div className="flex gap-2">
         <input
           type="text"
           value={input}
-          onChange={e => handleInputChange(e.target.value)}
-          placeholder="输入文字查看分词效果..."
+          onChange={e => {
+            setInput(e.target.value);
+            if (e.target.value) {
+              const preset = PRESETS.find(p => p.text === e.target.value);
+              setTokens(preset ? preset.tokens : simpleTokenize(e.target.value));
+            } else {
+              setTokens([]);
+            }
+          }}
+          placeholder="输入文字查看分词..."
           className="flex-1 bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#64748b] outline-none focus:border-blue-500"
         />
       </div>
-      <div className="flex gap-2 px-4 pb-2">
+      <div className="flex gap-2">
         {PRESETS.map(p => (
           <button
             key={p.text}
@@ -172,14 +177,12 @@ export default function TokenInteraction() {
           </button>
         ))}
       </div>
-      <div className="flex-1 relative">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredToken(null)}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoveredToken(null)}
+        style={{ width: '100%', height: CANVAS_HEIGHT + 'px', display: 'block' }}
+      />
     </div>
   );
 }

@@ -137,7 +137,7 @@ export default function TemperatureInteraction() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: "100%" }}>
       <div className="px-4 pt-2 flex gap-2">
         <button
           onClick={sample}
@@ -152,7 +152,7 @@ export default function TemperatureInteraction() {
           🗑️ 清空
         </button>
       </div>
-      <div className="flex-1">
+      <div style={{ height: "240px", position: "relative" }}>
         <canvas
           ref={canvasRef}
           className="w-full h-full touch-none"

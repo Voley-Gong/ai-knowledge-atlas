@@ -168,7 +168,7 @@ export default function GradientDescentInteraction() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: "100%" }}>
       <div className="px-4 pt-2 flex gap-2 items-center">
         <button
           onClick={() => setRunning(!running)}
@@ -183,7 +183,7 @@ export default function GradientDescentInteraction() {
           🔄 重置
         </button>
       </div>
-      <div className="flex-1">
+      <div style={{ height: "240px", position: "relative" }}>
         <canvas
           ref={canvasRef}
           className="w-full h-full touch-none"

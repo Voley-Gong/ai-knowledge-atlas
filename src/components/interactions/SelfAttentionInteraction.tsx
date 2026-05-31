@@ -131,5 +131,5 @@ export default function SelfAttentionInteraction() {
     }
   };
 
-  return <canvas ref={canvasRef} className="w-full h-full" onClick={handleClick} />;
+  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} onClick={handleClick} />;
 }

@@ -152,7 +152,7 @@ export default function SoftmaxInteraction() {
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-full touch-none"
+      style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

@@ -99,7 +99,7 @@ export default function ConceptPageClient({ id }: { id: string }) {
             <div className="px-4 py-2 text-xs font-medium flex items-center gap-1" style={{ color: cfg.color }}>
               ⚡ 交互演示
             </div>
-            <div className="min-h-[300px]">
+            <div style={{ height: '320px', overflow: 'hidden' }}>
               <InteractionLoader conceptId={id} />
             </div>
           </div>

@@ -122,7 +122,7 @@ export default function DecoderOnlyInteraction() {
   }, [prompt, generated, generating, currentProbs]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: "100%" }}>
       <div className="px-4 pt-2 flex gap-2 items-center">
         <input
           value={prompt}
@@ -138,8 +138,8 @@ export default function DecoderOnlyInteraction() {
           {generating ? '⏳ 生成中...' : '▶ 生成'}
         </button>
       </div>
-      <div className="flex-1">
-        <canvas ref={canvasRef} className="w-full h-full" />
+      <div style={{ height: "240px", position: "relative" }}>
+        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
       </div>
     </div>
   );
