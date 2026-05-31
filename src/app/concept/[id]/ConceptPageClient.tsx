@@ -1,42 +1,48 @@
 'use client';
 
-import { concepts, getConceptById, CATEGORY_CONFIG, getAllConceptIds } from '@/data/concepts';
+import { getConceptById, CATEGORY_CONFIG, getAllConceptIds } from '@/data/concepts';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 
-// Dynamic imports for interaction components
-const interactionMap: Record<string, () => Promise<{ default: React.ComponentType }>> = {
-  'token': () => import('@/components/interactions/TokenInteraction'),
-  'embedding': () => import('@/components/interactions/EmbeddingInteraction'),
-  'attention': () => import('@/components/interactions/AttentionInteraction'),
-  'transformer': () => import('@/components/interactions/TransformerInteraction'),
-  'self-attention': () => import('@/components/interactions/SelfAttentionInteraction'),
-  'softmax': () => import('@/components/interactions/SoftmaxInteraction'),
-  'loss-function': () => import('@/components/interactions/LossFunctionInteraction'),
-  'gradient-descent': () => import('@/components/interactions/GradientDescentInteraction'),
-  'dropout': () => import('@/components/interactions/DropoutInteraction'),
-  'encoder-decoder': () => import('@/components/interactions/EncoderDecoderInteraction'),
-  'decoder-only': () => import('@/components/interactions/DecoderOnlyInteraction'),
-  'temperature': () => import('@/components/interactions/TemperatureInteraction'),
-  'rag': () => import('@/components/interactions/RAGInteraction'),
-  'chain-of-thought': () => import('@/components/interactions/ChainOfThoughtInteraction'),
-  'moe': () => import('@/components/interactions/MoEInteraction'),
+// 直接静态导入所有交互组件（避免动态导入在静态部署下失败）
+import TokenInteraction from '@/components/interactions/TokenInteraction';
+import EmbeddingInteraction from '@/components/interactions/EmbeddingInteraction';
+import AttentionInteraction from '@/components/interactions/AttentionInteraction';
+import TransformerInteraction from '@/components/interactions/TransformerInteraction';
+import SelfAttentionInteraction from '@/components/interactions/SelfAttentionInteraction';
+import SoftmaxInteraction from '@/components/interactions/SoftmaxInteraction';
+import LossFunctionInteraction from '@/components/interactions/LossFunctionInteraction';
+import GradientDescentInteraction from '@/components/interactions/GradientDescentInteraction';
+import DropoutInteraction from '@/components/interactions/DropoutInteraction';
+import EncoderDecoderInteraction from '@/components/interactions/EncoderDecoderInteraction';
+import DecoderOnlyInteraction from '@/components/interactions/DecoderOnlyInteraction';
+import TemperatureInteraction from '@/components/interactions/TemperatureInteraction';
+import RAGInteraction from '@/components/interactions/RAGInteraction';
+import ChainOfThoughtInteraction from '@/components/interactions/ChainOfThoughtInteraction';
+import MoEInteraction from '@/components/interactions/MoEInteraction';
+
+// 概念ID → 交互组件映射
+const interactionComponents: Record<string, React.ComponentType> = {
+  'token': TokenInteraction,
+  'embedding': EmbeddingInteraction,
+  'attention': AttentionInteraction,
+  'transformer': TransformerInteraction,
+  'self-attention': SelfAttentionInteraction,
+  'softmax': SoftmaxInteraction,
+  'loss-function': LossFunctionInteraction,
+  'gradient-descent': GradientDescentInteraction,
+  'dropout': DropoutInteraction,
+  'encoder-decoder': EncoderDecoderInteraction,
+  'decoder-only': DecoderOnlyInteraction,
+  'temperature': TemperatureInteraction,
+  'rag': RAGInteraction,
+  'chain-of-thought': ChainOfThoughtInteraction,
+  'moe': MoEInteraction,
 };
 
 function InteractionLoader({ conceptId }: { conceptId: string }) {
-  const loader = interactionMap[conceptId];
-  if (!loader) return null;
-
-  const DynamicComp = dynamic(loader, {
-    loading: () => (
-      <div className="flex items-center justify-center h-full text-[#94a3b8] text-sm">
-        加载交互组件...
-      </div>
-    ),
-    ssr: false,
-  });
-
-  return <DynamicComp />;
+  const Comp = interactionComponents[conceptId];
+  if (!Comp) return null;
+  return <Comp />;
 }
 
 export default function ConceptPageClient({ id }: { id: string }) {
@@ -58,6 +64,7 @@ export default function ConceptPageClient({ id }: { id: string }) {
   const idx = allIds.indexOf(id);
   const prevId = idx > 0 ? allIds[idx - 1] : null;
   const nextId = idx < allIds.length - 1 ? allIds[idx + 1] : null;
+  const hasInteraction = !!interactionComponents[id];
 
   return (
     <main className="min-h-screen pb-20">
@@ -70,7 +77,7 @@ export default function ConceptPageClient({ id }: { id: string }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold truncate">{concept.name}</h1>
-              <span className="text-sm text-[#64748b]">{concept.nameEn}</span>
+              <span className="text-sm text-[#64748b] hidden sm:inline">{concept.nameEn}</span>
             </div>
           </div>
           <span
@@ -84,7 +91,7 @@ export default function ConceptPageClient({ id }: { id: string }) {
 
       <div className="max-w-3xl mx-auto px-4 mt-4 space-y-5">
         {/* Interaction Area */}
-        {interactionMap[id] && (
+        {hasInteraction && (
           <div
             className="rounded-xl border overflow-hidden"
             style={{ borderColor: cfg.color + '30', backgroundColor: '#0d1117' }}
@@ -92,7 +99,7 @@ export default function ConceptPageClient({ id }: { id: string }) {
             <div className="px-4 py-2 text-xs font-medium flex items-center gap-1" style={{ color: cfg.color }}>
               ⚡ 交互演示
             </div>
-            <div className="h-[300px]">
+            <div className="min-h-[300px]">
               <InteractionLoader conceptId={id} />
             </div>
           </div>
