@@ -1,2 +1,2 @@
-:HL["/ai-knowledge-atlas/_next/static/chunks/0x-pdk1-yb.s3.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"concept","param":null,"prefetchHints":0,"slots":{"children":{"name":"id","param":{"type":"d","key":"ai-chip","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"eU3EuTceCVtBZPNKd6_38"}
+:HL["/ai-knowledge-atlas/_next/static/chunks/0tv26rz-di734.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"concept","param":null,"prefetchHints":0,"slots":{"children":{"name":"id","param":{"type":"d","key":"ai-chip","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"Auwyrfy1HtTJQuP8Umo16"}

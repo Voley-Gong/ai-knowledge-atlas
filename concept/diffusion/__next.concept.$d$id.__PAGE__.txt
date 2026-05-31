@@ -1,6 +1,6 @@
 1:"$Sreact.fragment"
-2:I[1092,["/ai-knowledge-atlas/_next/static/chunks/01xlw8hd842-c.js","/ai-knowledge-atlas/_next/static/chunks/0d3shmwh5_nmn.js","/ai-knowledge-atlas/_next/static/chunks/0j8-0zv4_bs65.js","/ai-knowledge-atlas/_next/static/chunks/0zwlzxn3ez6u5.js"],"default"]
+2:I[1092,["/ai-knowledge-atlas/_next/static/chunks/01xlw8hd842-c.js","/ai-knowledge-atlas/_next/static/chunks/0d3shmwh5_nmn.js","/ai-knowledge-atlas/_next/static/chunks/0j8-0zv4_bs65.js","/ai-knowledge-atlas/_next/static/chunks/0fv~m_dn4j.tc.js"],"default"]
 3:I[97367,["/ai-knowledge-atlas/_next/static/chunks/01xlw8hd842-c.js","/ai-knowledge-atlas/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
 4:"$Sreact.suspense"
-0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"id":"diffusion"}],[["$","script","script-0",{"src":"/ai-knowledge-atlas/_next/static/chunks/0j8-0zv4_bs65.js","async":true}],["$","script","script-1",{"src":"/ai-knowledge-atlas/_next/static/chunks/0zwlzxn3ez6u5.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"eU3EuTceCVtBZPNKd6_38"}
+0:{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"id":"diffusion"}],[["$","script","script-0",{"src":"/ai-knowledge-atlas/_next/static/chunks/0j8-0zv4_bs65.js","async":true}],["$","script","script-1",{"src":"/ai-knowledge-atlas/_next/static/chunks/0fv~m_dn4j.tc.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"Auwyrfy1HtTJQuP8Umo16"}
 5:null
