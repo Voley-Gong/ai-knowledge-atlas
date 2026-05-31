@@ -1,65 +1,126 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { concepts, CATEGORY_CONFIG, type Category } from '@/data/concepts';
+import Link from 'next/link';
+
+const categories: Category[] = ['basic', 'architecture', 'training', 'application', 'frontier'];
 
 export default function Home() {
+  const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
+
+  const filtered = activeCategory === 'all'
+    ? concepts
+    : concepts.filter(c => c.category === activeCategory);
+
+  const categoryConfig = (cat: Category) => CATEGORY_CONFIG[cat];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen pb-8">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-[#0a0e1a]/90 backdrop-blur-md border-b border-[#1e293b]">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-center mb-1">
+            🧠 AI 知识图鉴
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-sm text-[#94a3b8] text-center mb-4">
+            50个核心概念 · 交互式学习
           </p>
+          {/* Navigation */}
+          <nav className="flex justify-center gap-4 text-sm">
+            <Link href="/paths" className="text-[#94a3b8] hover:text-white transition-colors">
+              🛤️ 学习路径
+            </Link>
+            <Link href="/quiz" className="text-[#94a3b8] hover:text-white transition-colors">
+              📝 测验
+            </Link>
+          </nav>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      {/* Category Tabs */}
+      <div className="sticky top-[100px] z-20 bg-[#0a0e1a]/90 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                activeCategory === 'all'
+                  ? 'bg-white/10 text-white ring-1 ring-white/20'
+                  : 'text-[#94a3b8] hover:text-white'
+              }`}
+            >
+              全部 ({concepts.length})
+            </button>
+            {categories.map(cat => {
+              const cfg = categoryConfig(cat);
+              const count = concepts.filter(c => c.category === cat).length;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    activeCategory === cat
+                      ? 'text-white ring-1'
+                      : 'text-[#94a3b8] hover:text-white'
+                  }`}
+                  style={activeCategory === cat ? {
+                    backgroundColor: cfg.color + '20',
+                    borderColor: cfg.color,
+                    outlineColor: cfg.color + '60',
+                  } : {}}
+                >
+                  {cfg.icon} {cfg.label} ({count})
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Card Grid */}
+      <div className="max-w-4xl mx-auto px-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(concept => {
+            const cfg = categoryConfig(concept.category);
+            return (
+              <Link
+                key={concept.id}
+                href={`/concept/${concept.id}`}
+                className="group block rounded-xl p-5 border transition-all duration-200 hover:scale-[1.02]"
+                style={{
+                  backgroundColor: '#111827',
+                  borderColor: '#1e293b',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = cfg.color + '60';
+                  e.currentTarget.style.boxShadow = `0 0 20px ${cfg.color}20`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#1e293b';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-2xl">{cfg.icon}</span>
+                  <span
+                    className="text-xs px-2 py-1 rounded-full font-medium"
+                    style={{ backgroundColor: cfg.color + '20', color: cfg.color }}
+                  >
+                    {cfg.label}
+                  </span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                  {concept.name}
+                </h3>
+                <p className="text-sm text-[#94a3b8] leading-relaxed line-clamp-2">
+                  {concept.definition}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </main>
   );
 }
