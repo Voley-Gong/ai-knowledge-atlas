@@ -46,6 +46,16 @@ const interactionComponents: Record<string, React.ComponentType> = {
   'embodied-ai': dynamic(() => import('@/components/interactions/EmbodiedAIInteraction')),
   'ai-chip': dynamic(() => import('@/components/interactions/AIChipInteraction')),
   'agi': dynamic(() => import('@/components/interactions/AGIInteraction')),
+  'transfer-learning': dynamic(() => import('@/components/interactions/TransferLearningInteraction')),
+  'kv-cache': dynamic(() => import('@/components/interactions/KVCacheInteraction')),
+  'hallucination': dynamic(() => import('@/components/interactions/HallucinationInteraction')),
+  'mcp': dynamic(() => import('@/components/interactions/MCPInteraction')),
+  'multimodal': dynamic(() => import('@/components/interactions/MultimodalInteraction')),
+  'ai-safety': dynamic(() => import('@/components/interactions/AISafetyInteraction')),
+  'diffusion': dynamic(() => import('@/components/interactions/DiffusionInteraction')),
+  'reasoning-model': dynamic(() => import('@/components/interactions/ReasoningModelInteraction')),
+  'knowledge-distillation': dynamic(() => import('@/components/interactions/KnowledgeDistillationInteraction')),
+  'scaling-law': dynamic(() => import('@/components/interactions/ScalingLawInteraction')),
 };
 
 function InteractionLoader({ conceptId }: { conceptId: string }) {
