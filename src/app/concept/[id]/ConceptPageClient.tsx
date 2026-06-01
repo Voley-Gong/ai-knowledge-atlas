@@ -2,41 +2,45 @@
 
 import { getConceptById, CATEGORY_CONFIG, getAllConceptIds } from '@/data/concepts';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
-// 直接静态导入所有交互组件（避免动态导入在静态部署下失败）
-import TokenInteraction from '@/components/interactions/TokenInteraction';
-import EmbeddingInteraction from '@/components/interactions/EmbeddingInteraction';
-import AttentionInteraction from '@/components/interactions/AttentionInteraction';
-import TransformerInteraction from '@/components/interactions/TransformerInteraction';
-import SelfAttentionInteraction from '@/components/interactions/SelfAttentionInteraction';
-import SoftmaxInteraction from '@/components/interactions/SoftmaxInteraction';
-import LossFunctionInteraction from '@/components/interactions/LossFunctionInteraction';
-import GradientDescentInteraction from '@/components/interactions/GradientDescentInteraction';
-import DropoutInteraction from '@/components/interactions/DropoutInteraction';
-import EncoderDecoderInteraction from '@/components/interactions/EncoderDecoderInteraction';
-import DecoderOnlyInteraction from '@/components/interactions/DecoderOnlyInteraction';
-import TemperatureInteraction from '@/components/interactions/TemperatureInteraction';
-import RAGInteraction from '@/components/interactions/RAGInteraction';
-import ChainOfThoughtInteraction from '@/components/interactions/ChainOfThoughtInteraction';
-import MoEInteraction from '@/components/interactions/MoEInteraction';
-
-// 概念ID → 交互组件映射
+// 动态导入所有交互组件，按需加载，避免所有页面加载全部组件
 const interactionComponents: Record<string, React.ComponentType> = {
-  'token': TokenInteraction,
-  'embedding': EmbeddingInteraction,
-  'attention': AttentionInteraction,
-  'transformer': TransformerInteraction,
-  'self-attention': SelfAttentionInteraction,
-  'softmax': SoftmaxInteraction,
-  'loss-function': LossFunctionInteraction,
-  'gradient-descent': GradientDescentInteraction,
-  'dropout': DropoutInteraction,
-  'encoder-decoder': EncoderDecoderInteraction,
-  'decoder-only': DecoderOnlyInteraction,
-  'temperature': TemperatureInteraction,
-  'rag': RAGInteraction,
-  'chain-of-thought': ChainOfThoughtInteraction,
-  'moe': MoEInteraction,
+  'token': dynamic(() => import('@/components/interactions/TokenInteraction')),
+  'embedding': dynamic(() => import('@/components/interactions/EmbeddingInteraction')),
+  'attention': dynamic(() => import('@/components/interactions/AttentionInteraction')),
+  'transformer': dynamic(() => import('@/components/interactions/TransformerInteraction')),
+  'self-attention': dynamic(() => import('@/components/interactions/SelfAttentionInteraction')),
+  'softmax': dynamic(() => import('@/components/interactions/SoftmaxInteraction')),
+  'loss-function': dynamic(() => import('@/components/interactions/LossFunctionInteraction')),
+  'gradient-descent': dynamic(() => import('@/components/interactions/GradientDescentInteraction')),
+  'dropout': dynamic(() => import('@/components/interactions/DropoutInteraction')),
+  'encoder-decoder': dynamic(() => import('@/components/interactions/EncoderDecoderInteraction')),
+  'decoder-only': dynamic(() => import('@/components/interactions/DecoderOnlyInteraction')),
+  'temperature': dynamic(() => import('@/components/interactions/TemperatureInteraction')),
+  'rag': dynamic(() => import('@/components/interactions/RAGInteraction')),
+  'chain-of-thought': dynamic(() => import('@/components/interactions/ChainOfThoughtInteraction')),
+  'moe': dynamic(() => import('@/components/interactions/MoEInteraction')),
+  'multi-head-attention': dynamic(() => import('@/components/interactions/MultiHeadAttentionInteraction')),
+  'positional-encoding': dynamic(() => import('@/components/interactions/PositionalEncodingInteraction')),
+  'backpropagation': dynamic(() => import('@/components/interactions/BackpropagationInteraction')),
+  'learning-rate': dynamic(() => import('@/components/interactions/LearningRateInteraction')),
+  'overfitting': dynamic(() => import('@/components/interactions/OverfittingInteraction')),
+  'normalization': dynamic(() => import('@/components/interactions/NormalizationInteraction')),
+  'cross-attention': dynamic(() => import('@/components/interactions/CrossAttentionInteraction')),
+  'pre-training': dynamic(() => import('@/components/interactions/PreTrainingInteraction')),
+  'fine-tuning': dynamic(() => import('@/components/interactions/FineTuningInteraction')),
+  'agent': dynamic(() => import('@/components/interactions/AgentInteraction')),
+  'activation-function': dynamic(() => import('@/components/interactions/ActivationFunctionInteraction')),
+  'regularization': dynamic(() => import('@/components/interactions/RegularizationInteraction')),
+  'batch-epoch': dynamic(() => import('@/components/interactions/BatchEpochInteraction')),
+  'resnet': dynamic(() => import('@/components/interactions/ResNetInteraction')),
+  'encoder-only': dynamic(() => import('@/components/interactions/EncoderOnlyInteraction')),
+  'feed-forward-network': dynamic(() => import('@/components/interactions/FeedForwardInteraction')),
+  'rlhf': dynamic(() => import('@/components/interactions/RLHFInteraction')),
+  'prompt-engineering': dynamic(() => import('@/components/interactions/PromptEngineeringInteraction')),
+  'lora': dynamic(() => import('@/components/interactions/LoRAInteraction')),
+  'quantization': dynamic(() => import('@/components/interactions/QuantizationInteraction')),
 };
 
 function InteractionLoader({ conceptId }: { conceptId: string }) {
