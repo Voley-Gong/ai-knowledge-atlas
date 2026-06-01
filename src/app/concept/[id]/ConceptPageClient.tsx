@@ -41,6 +41,11 @@ const interactionComponents: Record<string, React.ComponentType> = {
   'prompt-engineering': dynamic(() => import('@/components/interactions/PromptEngineeringInteraction')),
   'lora': dynamic(() => import('@/components/interactions/LoRAInteraction')),
   'quantization': dynamic(() => import('@/components/interactions/QuantizationInteraction')),
+  'synthetic-data': dynamic(() => import('@/components/interactions/SyntheticDataInteraction')),
+  'world-model': dynamic(() => import('@/components/interactions/WorldModelInteraction')),
+  'embodied-ai': dynamic(() => import('@/components/interactions/EmbodiedAIInteraction')),
+  'ai-chip': dynamic(() => import('@/components/interactions/AIChipInteraction')),
+  'agi': dynamic(() => import('@/components/interactions/AGIInteraction')),
 };
 
 function InteractionLoader({ conceptId }: { conceptId: string }) {
